@@ -153,6 +153,27 @@ class GameScoreService {
         }
       ]);
 
+      // Calculate global longest streak
+      let globalLongestStreak = 0;
+      const allUsers = await GameScore.distinct('userId');
+      
+      for (const userId of allUsers) {
+        const games = await GameScore.find({ userId }).sort({ createdAt: 1 });
+        let currentStreak = 0;
+        let userLongestStreak = 0;
+
+        games.forEach(game => {
+          if (game.isWin) {
+            currentStreak++;
+            userLongestStreak = Math.max(userLongestStreak, currentStreak);
+          } else {
+            currentStreak = 0;
+          }
+        });
+
+        globalLongestStreak = Math.max(globalLongestStreak, userLongestStreak);
+      }
+
       return {
         totalPlayers,
         totalGames,
@@ -161,7 +182,8 @@ class GameScoreService {
         topScore: topScore ? topScore.score : 0,
         averageScore: avgStats.length > 0 ? Math.round(avgStats[0].avgScore) : 0,
         averageAttempts: avgStats.length > 0 ? Math.round(avgStats[0].avgAttempts * 10) / 10 : 0,
-        averageTime: avgStats.length > 0 ? Math.round(avgStats[0].avgTime) : 0
+        averageTime: avgStats.length > 0 ? Math.round(avgStats[0].avgTime) : 0,
+        longestStreak: globalLongestStreak
       };
     } catch (error) {
       throw new Error(`Error fetching leaderboard stats: ${error.message}`);

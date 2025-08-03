@@ -1,12 +1,50 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
+import { gameAPI } from '../lib/api';
 
 const { FiTarget, FiTrendingUp, FiUsers, FiZap, FiStar, FiAward } = FiIcons;
 
 const LandingPage = () => {
+  const [stats, setStats] = useState({
+    totalPlayers: 0,
+    totalGames: 0,
+    longestStreak: 0
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await gameAPI.getPublicStats();
+        if (response.success) {
+          setStats({
+            totalPlayers: response.data.totalPlayers,
+            totalGames: response.data.totalGames,
+            longestStreak: response.data.longestStreak
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+        // Keep default values if API fails
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
+
+  const formatNumber = (num) => {
+    if (num >= 1000000) {
+      return (num / 1000000).toFixed(1) + 'M';
+    } else if (num >= 1000) {
+      return (num / 1000).toFixed(1) + 'K';
+    }
+    return num.toString();
+  };
   const features = [
     {
       icon: FiTarget,
@@ -189,15 +227,21 @@ const LandingPage = () => {
             <h2 className="text-4xl font-bold text-white mb-16">Join the Community</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="text-center">
-                <div className="text-5xl font-bold text-blue-400 mb-2">1,000+</div>
+                <div className="text-5xl font-bold text-blue-400 mb-2">
+                  {loading ? '...' : stats.totalPlayers > 0 ? formatNumber(stats.totalPlayers) + '+' : '0'}
+                </div>
                 <div className="text-xl text-slate-300">Players</div>
               </div>
               <div className="text-center">
-                <div className="text-5xl font-bold text-purple-400 mb-2">50K+</div>
+                <div className="text-5xl font-bold text-purple-400 mb-2">
+                  {loading ? '...' : stats.totalGames > 0 ? formatNumber(stats.totalGames) + '+' : '0'}
+                </div>
                 <div className="text-xl text-slate-300">Games Played</div>
               </div>
               <div className="text-center">
-                <div className="text-5xl font-bold text-green-400 mb-2">15</div>
+                <div className="text-5xl font-bold text-green-400 mb-2">
+                  {loading ? '...' : stats.longestStreak || '0'}
+                </div>
                 <div className="text-xl text-slate-300">Longest Streak</div>
               </div>
             </div>

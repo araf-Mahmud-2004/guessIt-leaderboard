@@ -121,6 +121,15 @@ export const gameAPI = {
     return makeRequest('/games/leaderboard/stats');
   },
 
+  // Get public statistics (no auth required)
+  getPublicStats: async () => {
+    const response = await fetch(`${API_BASE_URL}/games/leaderboard/stats`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return response.json();
+  },
+
   // Sample data creation removed to ensure only real user data is used
 };
 
