@@ -1,0 +1,13 @@
+{
+  "name": "guessit-leaderboard",
+  "version": "1.0.0",
+  "description": "Number guessing game with leaderboard",
+  "scripts": {
+    "build": "cd frontend && npm install && npm run build",
+    "vercel-build": "npm run build"
+  },
+  "workspaces": [
+    "frontend",
+    "backend"
+  ]
+}
